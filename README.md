@@ -1,3 +1,0 @@
-# ComplianceLocker
-
-Step 1
