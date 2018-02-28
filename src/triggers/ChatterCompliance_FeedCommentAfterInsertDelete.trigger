@@ -365,8 +365,8 @@ trigger ChatterCompliance_FeedCommentAfterInsertDelete on FeedComment bulk (afte
     }
 
     */
-    if(chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings') != null){
-    	if(!chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').chatcomp__Chatter_Compliance_paused__c){
+    if(ArkusChatterComplianceSettings__c.getInstance('settings') != null){
+    	if(!ArkusChatterComplianceSettings__c.getInstance('settings').Chatter_Compliance_paused__c){
 
 		    if (trigger.isInsert){
 		    	//ChatterCompliance_Utils.CreateFeedCommentCompliance(trigger.new, true);

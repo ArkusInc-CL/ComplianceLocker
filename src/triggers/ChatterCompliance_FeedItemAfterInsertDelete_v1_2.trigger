@@ -13,9 +13,9 @@ trigger ChatterCompliance_FeedItemAfterInsertDelete_v1_2 on FeedItem bulk (after
     List<Attachment> attaToInsert = new List<Attachment>();
     List<Id> attachments = new List<Id>();
     
-    if(chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings') != null){
-        if(!chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').chatcomp__Chatter_Compliance_paused__c){
-            String owner = chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_owner__c;
+    if(ArkusChatterComplianceSettings__c.getInstance('settings') != null){
+        if(!ArkusChatterComplianceSettings__c.getInstance('settings').Chatter_Compliance_paused__c){
+            String owner = ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_owner__c;
             
             Map<Id,ChatterCompliance__c> ccs = new Map<Id,ChatterCompliance__c>();
             Map<Id,String> nameLinks = new Map<Id,String>();
@@ -88,7 +88,7 @@ trigger ChatterCompliance_FeedItemAfterInsertDelete_v1_2 on FeedItem bulk (after
                             
                             // mark all the chatter compliance records that have an attachment, but the attachment is too big if it's over 5MB
                             if(cVersionMap.get(cci.Attachment__c).ContentSize >= 5242880){ // 1 megabyte = 1 048 576 bytes. The limit of file size is 5Mb.
-                                cci.chatcomp__Files_attached_exceeded_limit__c = true;
+                                cci.Files_attached_exceeded_limit__c = true;
                             }
                         }
                     }
@@ -113,7 +113,7 @@ trigger ChatterCompliance_FeedItemAfterInsertDelete_v1_2 on FeedItem bulk (after
                         a.Body = fI.contentData;
                         attaToInsert.add(a);
                     }else{
-                        ccs.get(fI.id).chatcomp__Files_attached_exceeded_limit__c = true;
+                        ccs.get(fI.id).Files_attached_exceeded_limit__c = true;
                         toUpdateExceededLimit.add(ccs.get(fI.id));
                     }
                 }

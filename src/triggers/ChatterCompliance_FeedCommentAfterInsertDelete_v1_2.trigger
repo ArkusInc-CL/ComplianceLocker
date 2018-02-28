@@ -8,8 +8,8 @@ trigger ChatterCompliance_FeedCommentAfterInsertDelete_v1_2 on FeedComment bulk 
     *   Creates/updates a chatterComplianceComment record when a chatter comment is created/deleted.
     */
         
-    if(chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings') != null){
-        if(!chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').chatcomp__Chatter_Compliance_paused__c){
+    if(ArkusChatterComplianceSettings__c.getInstance('settings') != null){
+        if(!ArkusChatterComplianceSettings__c.getInstance('settings').Chatter_Compliance_paused__c){
             
             if(Schema.sObjectType.ChatterComplianceComment__c.isUpdateable()){
                 // For non chatter free users
@@ -73,9 +73,9 @@ trigger ChatterCompliance_FeedCommentAfterInsertDelete_v1_2 on FeedComment bulk 
                 Map<Id,ChatterComplianceCommentNew__c> comments = new Map<Id,ChatterComplianceCommentNew__c>();
                 List<Id> tempList = new List<Id>();
                 
-                if(chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings') != null){
+                if(ArkusChatterComplianceSettings__c.getInstance('settings') != null){
                             
-                    String owner = chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_owner__c;
+                    String owner = ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_owner__c;
                     
                     if(trigger.isInsert){
                         for(FeedComment f : trigger.new){

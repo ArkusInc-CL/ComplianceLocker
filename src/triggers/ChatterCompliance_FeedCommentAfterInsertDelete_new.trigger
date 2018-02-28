@@ -3,11 +3,11 @@
 *   @author     Arkus Dev Team
 */
 trigger ChatterCompliance_FeedCommentAfterInsertDelete_new on FeedComment bulk (after delete, after insert, after update) {
-    chatcomp__ArkusChatterComplianceSettings__c adminSettings  = chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings');
+    ArkusChatterComplianceSettings__c adminSettings  = ArkusChatterComplianceSettings__c.getInstance('settings');
  
-if (adminSettings.chatcomp__Chatter_Compliance_paused__c==false){
-      list<chatcomp__ChatterCompliance_PostContentInformation__c> postContentInformationList        =   [Select c.chatcomp__Post_content__c, c.chatcomp__Original_post_content__c, c.chatcomp__FeedItemUser__c, c.chatcomp__FeedCommentUser__c From chatcomp__ChatterCompliance_PostContentInformation__c c order by c.createddate asc limit 9000];
-      list<chatcomp__ChatterCompliance_PostContentInformation__c> postContentInformationToUpdate    =   new list<chatcomp__ChatterCompliance_PostContentInformation__c>();
+if (adminSettings.Chatter_Compliance_paused__c==false){
+      list<ChatterCompliance_PostContentInformation__c> postContentInformationList        =   [Select c.Post_content__c, c.Original_post_content__c, c.FeedItemUser__c, c.FeedCommentUser__c From ChatterCompliance_PostContentInformation__c c order by c.createddate asc limit 9000];
+      list<ChatterCompliance_PostContentInformation__c> postContentInformationToUpdate    =   new list<ChatterCompliance_PostContentInformation__c>();
       // Creates/updates a chatterComplianceComment record when a chatter comment is created/deleted.
       List<ChatterComplianceComment__c> toUpdate = new List<ChatterComplianceComment__c>();
            
@@ -31,7 +31,7 @@ if (adminSettings.chatcomp__Chatter_Compliance_paused__c==false){
 
       for(ChatterComplianceComment__c ccc : [Select 
                                                     c.id,
-                                                    c.chatcomp__Chatter_Compliance_Post_Content_Info__c,
+                                                    c.Chatter_Compliance_Post_Content_Info__c,
                                                     c.commentId__c
                                              from ChatterComplianceComment__c c 
                                              where commentId__c in : tempList]){
@@ -50,11 +50,11 @@ if (adminSettings.chatcomp__Chatter_Compliance_paused__c==false){
                     ChatterComplianceComment__c cc = new ChatterComplianceComment__c();
                     cc.ChatterCompliance__c = relatedCompliance.id;
 
-                    for (chatcomp__ChatterCompliance_PostContentInformation__c c  :  postContentInformationList){
-                        if(f.CreatedById == c.chatcomp__FeedCommentUser__c && f.CreatedDate > (system.now().addMinutes(-5))){
-                          cc.chatcomp__Original_comment_content__c  =   c.chatcomp__Original_post_content__c;
-                          cc.chatcomp__Chatter_Compliance_Post_Content_Info__c = c.Id;
-                        //cc.chatcomp__PostContent__c = c.chatcomp__Post_content__c;
+                    for (ChatterCompliance_PostContentInformation__c c  :  postContentInformationList){
+                        if(f.CreatedById == c.FeedCommentUser__c && f.CreatedDate > (system.now().addMinutes(-5))){
+                          cc.Original_comment_content__c  =   c.Original_post_content__c;
+                          cc.Chatter_Compliance_Post_Content_Info__c = c.Id;
+                        //cc.PostContent__c = c.Post_content__c;
                         }
                     }
 
@@ -84,11 +84,11 @@ if (adminSettings.chatcomp__Chatter_Compliance_paused__c==false){
                     ChatterComplianceComment__c cc = new ChatterComplianceComment__c();
                     cc.ChatterCompliance__c = relatedCompliance.id;
 
-                    for (chatcomp__ChatterCompliance_PostContentInformation__c c  :  postContentInformationList){
-                        if(f.CreatedById == c.chatcomp__FeedCommentUser__c && f.CreatedDate > (system.now().addMinutes(-5))){
-                          cc.chatcomp__Original_comment_content__c  =   c.chatcomp__Original_post_content__c;
-                          cc.chatcomp__Chatter_Compliance_Post_Content_Info__c = c.Id;
-                        //cc.chatcomp__PostContent__c = c.chatcomp__Post_content__c;
+                    for (ChatterCompliance_PostContentInformation__c c  :  postContentInformationList){
+                        if(f.CreatedById == c.FeedCommentUser__c && f.CreatedDate > (system.now().addMinutes(-5))){
+                          cc.Original_comment_content__c  =   c.Original_post_content__c;
+                          cc.Chatter_Compliance_Post_Content_Info__c = c.Id;
+                        //cc.PostContent__c = c.Post_content__c;
                         }
                     }
 
@@ -115,12 +115,12 @@ if (adminSettings.chatcomp__Chatter_Compliance_paused__c==false){
                   item.deletedBy__c = Userinfo.getUserId();
                   toUpdate.add(item);
               
-              if (item.chatcomp__Chatter_Compliance_Post_Content_Info__c !=null){
-                    //item.chatcomp__Chatter_Compliance_Post_Content_Info__r.chatcomp__delete__c      =   true;
-                    //item.chatcomp__Chatter_Compliance_Post_Content_Info__r.chatcomp__Deleted_by__c  =   Userinfo.getUserId() ;
-                    //item.chatcomp__Chatter_Compliance_Post_Content_Info__r.chatcomp__Delete_date__c =   Datetime.now();
+              if (item.Chatter_Compliance_Post_Content_Info__c !=null){
+                    //item.Chatter_Compliance_Post_Content_Info__r.delete__c      =   true;
+                    //item.Chatter_Compliance_Post_Content_Info__r.Deleted_by__c  =   Userinfo.getUserId() ;
+                    //item.Chatter_Compliance_Post_Content_Info__r.Delete_date__c =   Datetime.now();
                 
-                    postContentInformationToUpdate.add(item.chatcomp__Chatter_Compliance_Post_Content_Info__r);
+                    postContentInformationToUpdate.add(item.Chatter_Compliance_Post_Content_Info__r);
                 }
               }
           }

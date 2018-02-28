@@ -11,10 +11,10 @@ trigger ChatterCompliance_UserStatusAfterUpdate_v1_2 on User bulk (after update)
     //if(Schema.sObjectType.ChatterCompliance__c.isCreateable()){
         List<ChatterCompliance__c> toUpdate = new List<ChatterCompliance__c>();
         
-        if(chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings') != null){
-            if(!chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').chatcomp__Chatter_Compliance_paused__c){
+        if(ArkusChatterComplianceSettings__c.getInstance('settings') != null){
+            if(!ArkusChatterComplianceSettings__c.getInstance('settings').Chatter_Compliance_paused__c){
             
-                String owner = chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_Owner__c;
+                String owner = ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_Owner__c;
                 
                 //List<UserFeed> uf = new List<UserFeed>();
                 List<Id> tempList = new List<Id>();

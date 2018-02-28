@@ -7,12 +7,12 @@ trigger ChatterCompliance_FeedItemAfterInsertDelete on FeedItem bulk (after inse
 
 	User u = [select id , profileId, Profile.UserLicense.Name from User where id = : userInfo.getUserId()];
 
-    chatcomp__ArkusChatterComplianceSettings__c chatter = chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings');
+    ArkusChatterComplianceSettings__c chatter = ArkusChatterComplianceSettings__c.getInstance('settings');
     system.debug('@@ chatter : '+chatter);
     
     if(chatter != null && u.Profile.UserLicense.Name != 'Chatter External' && u.Profile.UserLicense.Name != 'Chatter Free'){
-        if(!chatter.chatcomp__Chatter_Compliance_paused__c){
-            if(!ChatterCompliance_AdminSettings.existId(chatter.chatcomp__ChatterCompliance_Owner__c)){
+        if(!chatter.Chatter_Compliance_paused__c){
+            if(!ChatterCompliance_AdminSettings.existId(chatter.ChatterCompliance_Owner__c)){
                 for(FeedItem f : trigger.new){
                     f.addError(ChatterCompliance_AdminSettings.msgCurrentOwnerDoesNotExists);
                     return;
@@ -30,12 +30,12 @@ trigger ChatterCompliance_FeedItemAfterInsertDelete on FeedItem bulk (after inse
     List<Attachment> attaToInsert = new List<Attachment>();
     List<Id> attachments = new List<Id>();
 
-    if(chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings') != null){
-        if(!chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').chatcomp__Chatter_Compliance_paused__c){
+    if(ArkusChatterComplianceSettings__c.getInstance('settings') != null){
+        if(!ArkusChatterComplianceSettings__c.getInstance('settings').Chatter_Compliance_paused__c){
 
             ChatterCompliance_AdminSettings.refreshOldCCRecords();
 
-            String owner = chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_owner__c;
+            String owner = ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_owner__c;
 
             Map<Id,ChatterCompliance__c> ccs = new Map<Id,ChatterCompliance__c>();
             Map<Id,String> nameLinks = new Map<Id,String>();
@@ -88,27 +88,27 @@ trigger ChatterCompliance_FeedItemAfterInsertDelete on FeedItem bulk (after inse
                     Id id2 = f.InsertedById;
                     if(ChatterCompliance_AdminSettings.static_global_map2 != null){
                         if(ChatterCompliance_AdminSettings.static_global_map2.get(id1 + '~' + id2) != null){
-                            cc.chatcomp__PostContentInformation__c = ChatterCompliance_AdminSettings.static_global_map2.get(id1 + '~' + id2);
+                            cc.PostContentInformation__c = ChatterCompliance_AdminSettings.static_global_map2.get(id1 + '~' + id2);
                         }
                         if(ChatterCompliance_AdminSettings.static_global_map2.get(id1 + '~' + id2 + '~' + '1') != null){
-                            cc.chatcomp__OriginalPostContent__c = ChatterCompliance_AdminSettings.static_global_map2.get(id1 + '~' + id2 + '~' + '1');
+                            cc.OriginalPostContent__c = ChatterCompliance_AdminSettings.static_global_map2.get(id1 + '~' + id2 + '~' + '1');
                         }
                     }
 
                 for (CollaborationGroup collaborationGroup : collaborationGroupList){
                     if (collaborationGroup.Id == f.parentId){
-                        cc.chatcomp__Is_a_customer_group_member__c = true;
+                        cc.Is_a_customer_group_member__c = true;
                         if(collaborationGroup.CollaborationType == 'Private'){
-                            cc.chatcomp__Posted_on_a_private_customer_group__c = true;
+                            cc.Posted_on_a_private_customer_group__c = true;
                         }
                     }
                 }
 
                 if(usersMap.get(f.createdById) != null){
                     if (usersMap.get(f.createdById).Profile.UserLicense.Name == 'Chatter External'){
-                        cc.chatcomp__Post_made_by_an_outside_contact__c = true;
-                        cc.chatcomp__Is_a_customer_group_member__c = true;
-                        cc.chatcomp__Posted_on_a_private_customer_group__c = true;
+                        cc.Post_made_by_an_outside_contact__c = true;
+                        cc.Is_a_customer_group_member__c = true;
+                        cc.Posted_on_a_private_customer_group__c = true;
                     }
                 }
 
@@ -145,14 +145,14 @@ trigger ChatterCompliance_FeedItemAfterInsertDelete on FeedItem bulk (after inse
 
                             // mark all the chatter compliance records that have an attachment, but the attachment is too big if it's over 5MB
                             if(cVersionMap.get(cci.Attachment__c).ContentSize >= 5242880){ // 1 megabyte = 1 048 576 bytes. The limit of file size is 5Mb.
-                                cci.chatcomp__Files_attached_exceeded_limit__c = true;
+                                cci.Files_attached_exceeded_limit__c = true;
                             }
                         }
                     }
                 }
 
 
-                if(!chatter.chatcomp__Do_NOT_create_the_chatter_compliance_rec__c){
+                if(!chatter.Do_NOT_create_the_chatter_compliance_rec__c){
                     insert toUpdate;
                 }
 
@@ -168,24 +168,24 @@ trigger ChatterCompliance_FeedItemAfterInsertDelete on FeedItem bulk (after inse
                         a.parentId = ccs.get(fI.id).id;
                         a.Name = fI.contentFileName;
                         a.ContentType = fI.ContentType;
-                        if(!chatter.chatcomp__Do_not_keep_any_attachments__c){
+                        if(!chatter.Do_not_keep_any_attachments__c){
                             a.Body = [SELECT contentData FROM FeedItem WHERE Id = :fI.Id].contentData;
                             attaToInsert.add(a);
                         }
                     }else{
-                        ccs.get(fI.id).chatcomp__Files_attached_exceeded_limit__c = true;
+                        ccs.get(fI.id).Files_attached_exceeded_limit__c = true;
                         toUpdateExceededLimit.add(ccs.get(fI.id));
                     }
                 }
 
                 if((attaToInsert != null) && (attaToInsert.size() > 0)){
-                    if(!chatter.chatcomp__Do_NOT_create_the_chatter_compliance_rec__c){
+                    if(!chatter.Do_NOT_create_the_chatter_compliance_rec__c){
                         insert attaToInsert;
                     }
                 }
 
                 if((toUpdateExceededLimit != null) && (toUpdateExceededLimit.size() > 0)){
-                    if(!chatter.chatcomp__Do_NOT_create_the_chatter_compliance_rec__c){
+                    if(!chatter.Do_NOT_create_the_chatter_compliance_rec__c){
                         update toUpdateExceededLimit;
                     }
                 }
@@ -218,7 +218,7 @@ trigger ChatterCompliance_FeedItemAfterInsertDelete on FeedItem bulk (after inse
                         toUpdate.add(cc);
                     }
                 }
-                if(!chatter.chatcomp__Do_NOT_create_the_chatter_compliance_rec__c){
+                if(!chatter.Do_NOT_create_the_chatter_compliance_rec__c){
                     update toupdateComments;
                     update toupdateCommentsNew;
                     upsert toUpdate;
@@ -228,8 +228,8 @@ trigger ChatterCompliance_FeedItemAfterInsertDelete on FeedItem bulk (after inse
     }
     */
 
-    if(chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings') != null){
-        if(!chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').chatcomp__Chatter_Compliance_paused__c){
+    if(ArkusChatterComplianceSettings__c.getInstance('settings') != null){
+        if(!ArkusChatterComplianceSettings__c.getInstance('settings').Chatter_Compliance_paused__c){
 		    if (trigger.isInsert){
 		    	ChatterCompliance_Utils.CreateFeedItemCompliance(trigger.new, true);
 		    }else if(trigger.isUpdate){

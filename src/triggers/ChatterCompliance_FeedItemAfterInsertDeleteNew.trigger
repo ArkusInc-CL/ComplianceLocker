@@ -4,24 +4,24 @@
 *   @author     Arkus Dev Team
 */
 trigger ChatterCompliance_FeedItemAfterInsertDeleteNew on FeedItem bulk (after insert, after delete) {
-    chatcomp__ArkusChatterComplianceSettings__c       adminSettings       =   chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings');
+    ArkusChatterComplianceSettings__c       adminSettings       =   ArkusChatterComplianceSettings__c.getInstance('settings');
  
  //list<CollaborationGroupFeed> myCollaborationGroupFeedList=[Select c.FeedPost.ParentId, c.FeedPost.FeedItemId, c.FeedPostId From CollaborationGroupFeed c];
  
-    if (adminSettings.chatcomp__Chatter_Compliance_paused__c==false){
+    if (adminSettings.Chatter_Compliance_paused__c==false){
     
-        list<chatcomp__ChatterCompliance_PostContentInformation__c> postContentInformationList = [Select c.chatcomp__Post_content__c, c.chatcomp__Original_post_content__c, c.chatcomp__FeedItemUser__c, c.CreatedById From chatcomp__ChatterCompliance_PostContentInformation__c c order by c.createddate asc limit 1000];
+        list<ChatterCompliance_PostContentInformation__c> postContentInformationList = [Select c.Post_content__c, c.Original_post_content__c, c.FeedItemUser__c, c.CreatedById From ChatterCompliance_PostContentInformation__c c order by c.createddate asc limit 1000];
 
         //  Creates/updates a chatterCompliance record when a chatter post is created/deleted.
       List<ChatterCompliance__c> toUpdate = new List<ChatterCompliance__c>();
       List<Attachment> attaToInsert = new List<Attachment>();
       List<Id> attachments = new List<Id>();
-      list<chatcomp__ChatterCompliance_PostContentInformation__c> informationToUpdate = new list<chatcomp__ChatterCompliance_PostContentInformation__c>();
+      list<ChatterCompliance_PostContentInformation__c> informationToUpdate = new list<ChatterCompliance_PostContentInformation__c>();
             
-      if(chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings') != null){
+      if(ArkusChatterComplianceSettings__c.getInstance('settings') != null){
                   
-          String owner                  =    chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_owner__c;
-          boolean doNotkeepAttachments  =    chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').chatcomp__Do_not_keep_any_attachments__c;
+          String owner                  =    ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_owner__c;
+          boolean doNotkeepAttachments  =    ArkusChatterComplianceSettings__c.getInstance('settings').Do_not_keep_any_attachments__c;
           
           
           Map<Id,ChatterCompliance__c> ccs = new Map<Id,ChatterCompliance__c>();
@@ -38,7 +38,7 @@ trigger ChatterCompliance_FeedItemAfterInsertDeleteNew on FeedItem bulk (after i
               }
           }
           
-          for(ChatterCompliance__c cc : [Select id,PostId__c,chatcomp__PostContentInformation__c,Related_record_name__c,(Select id,chatcomp__Chatter_Compliance_Post_Content_Info__c from ChatterComplianceComments__r) from ChatterCompliance__c where PostId__c in : tempList]){
+          for(ChatterCompliance__c cc : [Select id,PostId__c,PostContentInformation__c,Related_record_name__c,(Select id,Chatter_Compliance_Post_Content_Info__c from ChatterComplianceComments__r) from ChatterCompliance__c where PostId__c in : tempList]){
               ccs.put(cc.PostId__c,cc);
           }
           
@@ -67,19 +67,19 @@ trigger ChatterCompliance_FeedItemAfterInsertDeleteNew on FeedItem bulk (after i
                   
                   for(CollaborationGroup c:[Select c.Id,Name,CanHaveGuests  From CollaborationGroup c limit 2000]){
                     if (nameLinks.get(f.id) ==  c.Name  &&  c.CanHaveGuests ==  true){
-                        cc.chatcomp__Posted_on_a_private_customer_group__c  =   true;
+                        cc.Posted_on_a_private_customer_group__c  =   true;
                     }
                   }
                   
                   if(UserInfo.getProfileId()==p.id){
-                        cc.chatcomp__Is_a_customer_group_member__c  =   true ;
+                        cc.Is_a_customer_group_member__c  =   true ;
                   }
                   
-                  for (chatcomp__ChatterCompliance_PostContentInformation__c c  :  postContentInformationList){
+                  for (ChatterCompliance_PostContentInformation__c c  :  postContentInformationList){
                     if(f.CreatedById == c.CreatedById && f.CreatedDate > (system.now().addMinutes(-5))){
-                        cc.chatcomp__OriginalPostContent__c         =   c.chatcomp__Original_post_content__c;
-                        cc.chatcomp__PostContentInformation__c      =   c.Id;
-                        cc.chatcomp__PostContent__c                 =   c.chatcomp__Post_content__c;
+                        cc.OriginalPostContent__c         =   c.Original_post_content__c;
+                        cc.PostContentInformation__c      =   c.Id;
+                        cc.PostContent__c                 =   c.Post_content__c;
                     }
                   }
                   
@@ -98,7 +98,7 @@ trigger ChatterCompliance_FeedItemAfterInsertDeleteNew on FeedItem bulk (after i
                   toUpdate.add(cc);
               }
               
-              if (chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').chatcomp__Do_NOT_create_the_chatter_compliance_rec__c==false){
+              if (ArkusChatterComplianceSettings__c.getInstance('settings').Do_NOT_create_the_chatter_compliance_rec__c==false){
                   insert toUpdate;
                   toUpdate.clear();
               }
@@ -122,9 +122,9 @@ trigger ChatterCompliance_FeedItemAfterInsertDeleteNew on FeedItem bulk (after i
                             attaToInsert.add(a);
                         }
                         
-                        ccs.get(fI.id).chatcomp__Files_attached_exceeded_limit__c = false;
+                        ccs.get(fI.id).Files_attached_exceeded_limit__c = false;
                     }else{  
-                        ccs.get(fI.id).chatcomp__Files_attached_exceeded_limit__c = true;
+                        ccs.get(fI.id).Files_attached_exceeded_limit__c = true;
                         toUpdateExceededLimit.add(ccs.get(fI.id));
                     }            
                  }
@@ -153,12 +153,12 @@ trigger ChatterCompliance_FeedItemAfterInsertDeleteNew on FeedItem bulk (after i
                       cc.delete_Date__c = Datetime.now();
                       cc.deletedBy__c   = Userinfo.getUserId();
 
-                      if (cc.chatcomp__PostContentInformation__c !=null){
-                          //cc.chatcomp__PostContentInformation__r.chatcomp__delete__c        =   true;
-                          //cc.chatcomp__PostContentInformation__r.chatcomp__Deleted_by__c    =   Userinfo.getUserId() ;
-                          //cc.chatcomp__PostContentInformation__r.chatcomp__Delete_date__c   =   Datetime.now();
+                      if (cc.PostContentInformation__c !=null){
+                          //cc.PostContentInformation__r.delete__c        =   true;
+                          //cc.PostContentInformation__r.Deleted_by__c    =   Userinfo.getUserId() ;
+                          //cc.PostContentInformation__r.Delete_date__c   =   Datetime.now();
                       
-                          informationToUpdate.add(cc.chatcomp__PostContentInformation__r);
+                          informationToUpdate.add(cc.PostContentInformation__r);
                       }
                       
                       for(ChatterComplianceComment__c ccc : cc.ChatterComplianceComments__r){
@@ -166,12 +166,12 @@ trigger ChatterCompliance_FeedItemAfterInsertDeleteNew on FeedItem bulk (after i
                           ccc.deleted_Date__c = Datetime.now();
                           ccc.deletedBy__c = Userinfo.getUserId();
 
-                          if (ccc.chatcomp__Chatter_Compliance_Post_Content_Info__c                            !=   null){
-                              //ccc.chatcomp__Chatter_Compliance_Post_Content_Info__r.chatcomp__delete__c         =   true;
-                              //ccc.chatcomp__Chatter_Compliance_Post_Content_Info__r.chatcomp__Deleted_by__c     =   Userinfo.getUserId() ;
-                              //ccc.chatcomp__Chatter_Compliance_Post_Content_Info__r.chatcomp__Delete_date__c    =   Datetime.now();
+                          if (ccc.Chatter_Compliance_Post_Content_Info__c                            !=   null){
+                              //ccc.Chatter_Compliance_Post_Content_Info__r.delete__c         =   true;
+                              //ccc.Chatter_Compliance_Post_Content_Info__r.Deleted_by__c     =   Userinfo.getUserId() ;
+                              //ccc.Chatter_Compliance_Post_Content_Info__r.Delete_date__c    =   Datetime.now();
                        
-                              informationToUpdate.add(ccc.chatcomp__Chatter_Compliance_Post_Content_Info__r);
+                              informationToUpdate.add(ccc.Chatter_Compliance_Post_Content_Info__r);
                           }
                           
                           toUpdateComments.add(ccc);

@@ -4,19 +4,19 @@
 */
 trigger ChatterCompliance_UserStatusAfterUpdate on User bulk (after update, before update) {
     if(trigger.isBefore){
-        chatcomp__ArkusChatterComplianceSettings__c chatter = chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings');
+        ArkusChatterComplianceSettings__c chatter = ArkusChatterComplianceSettings__c.getInstance('settings');
         if(chatter != null){
-            if(!chatter.chatcomp__Chatter_Compliance_paused__c){         
-                if(!ChatterCompliance_AdminSettings.existId(chatter.chatcomp__ChatterCompliance_Owner__c)){
+            if(!chatter.Chatter_Compliance_paused__c){         
+                if(!ChatterCompliance_AdminSettings.existId(chatter.ChatterCompliance_Owner__c)){
                     for(User u : trigger.new){
                         //if(trigger.oldMap.get(u.Id).CurrentStatus != u.CurrentStatus && u.CurrentStatus != null && u.CurrentStatus != ''){
                         u.addError(ChatterCompliance_AdminSettings.msgCurrentOwnerDoesNotExists);
                         //}
                     }
                 }
-                if(chatter.chatcomp__ChatterCompliance_Owner__c != null){
+                if(chatter.ChatterCompliance_Owner__c != null){
                     for(User u : trigger.new){
-                        Id theCCUserId = chatter.chatcomp__ChatterCompliance_Owner__c;
+                        Id theCCUserId = chatter.ChatterCompliance_Owner__c;
                         if(u.isActive == false && u.Id == theCCUserId){  
                             u.addError(ChatterCompliance_AdminSettings.msgCanNotDeactivateUser);    
                             u.isActive.addError(ChatterCompliance_AdminSettings.msgCanNotDeactivateUser);
@@ -34,14 +34,14 @@ trigger ChatterCompliance_UserStatusAfterUpdate on User bulk (after update, befo
         
         List<ChatterCompliance__c> toUpdate = new List<ChatterCompliance__c>();
         
-        if(chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings') != null){
-            if(!chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').chatcomp__Chatter_Compliance_paused__c){
+        if(ArkusChatterComplianceSettings__c.getInstance('settings') != null){
+            if(!ArkusChatterComplianceSettings__c.getInstance('settings').Chatter_Compliance_paused__c){
             
-                chatcomp__ArkusChatterComplianceSettings__c chatter = chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings');
+                ArkusChatterComplianceSettings__c chatter = ArkusChatterComplianceSettings__c.getInstance('settings');
             
                 ChatterCompliance_AdminSettings.refreshOldCCRecords();
             
-                String owner = chatcomp__ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_Owner__c;
+                String owner = ArkusChatterComplianceSettings__c.getInstance('settings').ChatterCompliance_Owner__c;
                 
                 //List<UserFeed> uf = new List<UserFeed>();
                 List<Id> tempList = new List<Id>();
@@ -74,10 +74,10 @@ trigger ChatterCompliance_UserStatusAfterUpdate on User bulk (after update, befo
                                     Id id1 = newUser.Id;
                                     if(ChatterCompliance_AdminSettings.static_global_map3 != null){
                                         if(ChatterCompliance_AdminSettings.static_global_map3.get(id1 + '~') != null){
-                                            cc.chatcomp__PostContentInformation__c = ChatterCompliance_AdminSettings.static_global_map3.get(id1 + '~');
+                                            cc.PostContentInformation__c = ChatterCompliance_AdminSettings.static_global_map3.get(id1 + '~');
                                         }
                                         if(ChatterCompliance_AdminSettings.static_global_map3.get(id1 + '~' + '1') != null){
-                                            cc.chatcomp__OriginalPostContent__c = ChatterCompliance_AdminSettings.static_global_map3.get(id1 + '~' + '1');
+                                            cc.OriginalPostContent__c = ChatterCompliance_AdminSettings.static_global_map3.get(id1 + '~' + '1');
                                         }
                                     }
                                                 
@@ -101,7 +101,7 @@ trigger ChatterCompliance_UserStatusAfterUpdate on User bulk (after update, befo
                     
                     ChatterCompliance_AdminSettings.sendEmails(toUpdate);
                     
-                    if(!chatter.chatcomp__Do_NOT_create_the_chatter_compliance_rec__c){
+                    if(!chatter.Do_NOT_create_the_chatter_compliance_rec__c){
                         insert toUpdate;
                     }
                 }
